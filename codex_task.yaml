@@ -735,7 +735,7 @@ tasks:
       - Password verification working
       - Proper error messages (in Polish)
 
-  - id: create-middleware // complete ??
+  - id: create-middleware // complete
     title: Add Authentication Middleware
     priority: high
     estimated_time: 20m
@@ -808,7 +808,7 @@ tasks:
       - Public routes /t/* accessible
       - No infinite redirect loops
 
-  - id: create-trainings-api
+  - id: create-trainings-api // complete
     title:  Implement Trainings API Routes
     priority: critical
     estimated_time: 60m
@@ -991,7 +991,7 @@ tasks:
       - Token generation works
       - Attendance stats calculated correctly
 
-  - id: create-attendance-api
+  - id: create-attendance-api // complete
     title: Implement Attendance API Routes (Public)
     priority: critical
     estimated_time: 45m
@@ -1102,7 +1102,7 @@ tasks:
   # PHASE 3: ADMIN UI - COMPONENTS (CONTINUED IN NEXT MESSAGE DUE TO LENGTH)
   # ============================================================================
 
-  - id: create-admin-login-page
+  - id: create-admin-login-page // complete
     title: Create Admin Login Page (Black & Gold Theme)
     priority: critical
     estimated_time: 45m

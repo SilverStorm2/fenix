@@ -9,10 +9,10 @@ module.exports = {
     extend: {
       colors: {
         fenix: {
-          black: "#0A0A0A",
-          gold: "#FFD700",
-          "gold-dark": "#DAA520",
-          "gold-light": "#FFF4CC",
+          black: "#0B0F1A",
+          gold: "#B6FF3B",
+          "gold-dark": "#8AD61F",
+          "gold-light": "#E6EEF8",
           success: "#10B981",
           danger: "#EF4444",
           gray: "#9CA3AF",
@@ -22,10 +22,10 @@ module.exports = {
         sans: ["Montserrat", "Inter", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        "gold-gradient": "linear-gradient(135deg, #FFD700 0%, #DAA520 100%)",
-        "black-gradient": "linear-gradient(135deg, #1a1a1a 0%, #0A0A0A 100%)",
+        "gold-gradient": "linear-gradient(135deg, #B6FF3B 0%, #8AD61F 100%)",
+        "black-gradient": "linear-gradient(135deg, #151B2B 0%, #0B0F1A 100%)",
         "fenix-gradient":
-          "linear-gradient(135deg, #0A0A0A 0%, #DAA520 50%, #FFD700 100%)",
+          "linear-gradient(135deg, #0B0F1A 0%, #8AD61F 50%, #B6FF3B 100%)",
       },
     },
   },
