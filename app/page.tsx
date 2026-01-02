@@ -50,7 +50,24 @@ export default function Home() {
 
         <section className="mt-12">
           <div className="relative overflow-hidden rounded-3xl border border-fenix-gold/20 bg-black/40 shadow-2xl">
-            <div className="h-40 w-full bg-[radial-gradient(circle_at_top,_rgba(182,255,59,0.25),_transparent_60%)] sm:h-48 lg:h-56"></div>
+            <div className="absolute inset-0">
+              <Image
+                src="/images/zdjecie-profilowe.jpg"
+                alt="Fenix Team hero"
+                width={1600}
+                height={900}
+                className="h-full w-full object-cover object-[70%_45%] opacity-70"
+                priority
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(182,255,59,0.18),_transparent_55%)]"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-fenix-black/85 via-fenix-black/45 to-fenix-black/10"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-fenix-black/10 via-fenix-black/35 to-fenix-black/85"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,0,0,0.45),_transparent_60%)]"></div>
+            </div>
+            <div className="relative h-40 w-full sm:h-48 lg:h-56">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(182,255,59,0.18),_transparent_60%)]"></div>
+              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-fenix-black to-transparent"></div>
+            </div>
           </div>
           <div className="relative -mt-12 flex flex-col items-center gap-4 text-center sm:-mt-16">
             <div className="h-24 w-24 rounded-full border border-fenix-gold/30 bg-fenix-black p-2 shadow-xl sm:h-28 sm:w-28">
