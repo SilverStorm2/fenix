@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         String
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  groups    Group[]    @relation("CoachGroups")
+  trainings Training[] @relation("CreatedTrainings")
+
+  @@map("users")
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  name      String
+  yearBorn  Int?     @map("year_born")
+  coachId   String?  @map("coach_id")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  coach     User?     @relation("CoachGroups", fields: [coachId], references: [id], onDelete: SetNull)
+  players   Player[]
+  trainings Training[]
+
+  @@map("groups")
+}
+
+model Player {
+  id           String       @id @default(uuid())
+  firstName    String       @map("first_name")
+  lastName     String       @map("last_name")
+  groupId      String       @map("group_id")
+  jerseyNumber Int?         @map("jersey_number")
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  group      Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  attendance Attendance[]
+
+  @@map("players")
+}
+
+model Training {
+  id           String       @id @default(uuid())
+  token        String       @unique
+  groupId      String       @map("group_id")
+  trainingDate DateTime     @map("training_date") @db.Date
+  trainingTime String       @map("training_time")
+  notes        String?
+  createdBy    String?      @map("created_by")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  creator User? @relation("CreatedTrainings", fields: [createdBy], references: [id], onDelete: SetNull)
+  attendance Attendance[]
+
+  @@map("trainings")
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  trainingId  String   @map("training_id")
+  playerId    String   @map("player_id")
+  status      String
+  respondedAt DateTime @default(now()) @map("responded_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, playerId])
+  @@map("attendance")
+}

@@ -1,0 +1,1310 @@
+name:  FENIX Team App - MVP Implementation
+description: |
+  Complete implementation of the FENIX Team App MVP - an attendance tracking system 
+  for a youth football academy with black and gold theme.  The application allows coaches 
+  to create training sessions and share links with parents, who can confirm attendance 
+  without logging in.  
+
+language: Polish (UI text), English (code comments)
+theme: Black & Gold (FENIX brand colors)
+
+repository: 
+  name: fenix-team-app
+  description:  Attendance management system for FENIX Football Academy
+
+technologies:
+  frontend:
+    - Next.js 14+ (App Router)
+    - React 18+
+    - TypeScript
+    - Tailwind CSS
+  backend:
+    - Next.js API Routes
+    - Prisma ORM
+  database:
+    - PostgreSQL
+  authentication:
+    - JWT (jose library)
+    - HTTP-only cookies
+  hosting:
+    - Vercel
+
+environment_variables:
+  - name: DATABASE_URL
+    description: PostgreSQL connection string
+    required: true
+    example: "postgresql://user:password@host:5432/fenix_db"
+  - name:  NEXTAUTH_SECRET
+    description:  Secret key for JWT signing (min 32 characters)
+    required: true
+    example: "your-super-secret-key-here-min-32-chars"
+  - name: NEXTAUTH_URL
+    description: Application URL
+    required: true
+    example:  "http://localhost:3000"
+
+tasks:
+  # ============================================================================
+  # PHASE 0: PROJECT SETUP & CONFIGURATION
+  # ============================================================================
+  
+  - id: setup-nextjs-project
+    title: Initialize Next.js Project
+    priority: critical
+    estimated_time: 15m
+    description: |
+      Create a new Next.js 14+ project with TypeScript and App Router.  
+      Set up the basic project structure with all necessary folders. 
+    steps:
+      - Run:  npx create-next-app@latest fenix-team-app --typescript --tailwind --app
+      - Accept default options for ESLint
+      - Do NOT use src/ directory
+      - Verify project structure includes app/, components/, public/ directories
+      - Create folder structure: 
+        - app/admin/
+        - app/api/
+        - app/t/
+        - components/
+        - lib/
+        - prisma/
+    validation:
+      - Next.js 14+ project initialized
+      - TypeScript configured
+      - App Router enabled
+      - Folder structure matches requirements
+      - package.json includes all dependencies
+
+  - id: setup-tailwind-css // finished
+    title: Configure Tailwind CSS with FENIX Black & Gold Theme
+    priority: critical
+    estimated_time: 20m
+    depends_on: 
+      - setup-nextjs-project
+    description: |
+      Install and configure Tailwind CSS with custom FENIX brand colors 
+      (black and gold palette). Set up custom utility classes and component styles.
+    files_to_create:
+      - path: tailwind.config.js
+        description: Tailwind configuration with FENIX colors
+        content: |
+          /** @type {import('tailwindcss').Config} */
+          module.exports = {
+            content: [
+              './pages/**/*.{js,ts,jsx,tsx,mdx}',
+              './components/**/*.{js,ts,jsx,tsx,mdx}',
+              './app/**/*.{js,ts,jsx,tsx,mdx}',
+            ],
+            theme: {
+              extend: {
+                colors: {
+                  fenix: {
+                    black: '#0A0A0A',
+                    gold: '#FFD700',
+                    'gold-dark': '#DAA520',
+                    'gold-light': '#FFF4CC',
+                    success: '#10B981',
+                    danger:  '#EF4444',
+                    gray: '#9CA3AF',
+                  },
+                },
+                fontFamily: {
+                  sans: ['Montserrat', 'Inter', 'system-ui', 'sans-serif'],
+                },
+                backgroundImage: {
+                  'gold-gradient': 'linear-gradient(135deg, #FFD700 0%, #DAA520 100%)',
+                  'black-gradient': 'linear-gradient(135deg, #1a1a1a 0%, #0A0A0A 100%)',
+                  'fenix-gradient': 'linear-gradient(135deg, #0A0A0A 0%, #DAA520 50%, #FFD700 100%)',
+                },
+              },
+            },
+            plugins: [],
+          }
+    validation:
+      - Tailwind CSS configured
+      - Custom FENIX colors available (fenix-black, fenix-gold, etc.)
+      - Font family configured
+      - Gradients available
+      - No console errors when running dev server
+
+  - id: setup-global-styles // finished
+    title: Create Global Styles with Custom Components
+    priority: critical
+    estimated_time: 30m
+    depends_on: 
+      - setup-tailwind-css
+    description: |
+      Set up global CSS with Tailwind layers, custom component classes 
+      (buttons, cards, inputs), print styles, and gold shine animation.
+    files_to_create:
+      - path: app/globals.css
+        description: Global styles with Tailwind and custom components
+        content: |
+          @tailwind base;
+          @tailwind components;
+          @tailwind utilities;
+
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+          @layer base {
+            body {
+              @apply bg-fenix-black text-gray-100;
+            }
+          }
+
+          @layer components {
+            .btn-gold {
+              @apply bg-fenix-gold hover:bg-fenix-gold-dark text-fenix-black font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
+            }
+            
+            .btn-black {
+              @apply bg-fenix-black border-2 border-fenix-gold hover:bg-fenix-gold hover:text-fenix-black text-fenix-gold font-bold py-3 px-6 rounded-lg transition-all duration-300;
+            }
+            
+            . btn-success {
+              @apply bg-fenix-success hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg;
+            }
+            
+            .btn-danger {
+              @apply bg-fenix-danger hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg;
+            }
+            
+            .card {
+              @apply bg-gradient-to-br from-gray-900 to-fenix-black border border-fenix-gold/20 rounded-xl shadow-2xl p-6;
+            }
+            
+            . card-gold {
+              @apply bg-gradient-to-br from-fenix-gold-light to-fenix-gold border-2 border-fenix-gold-dark rounded-xl shadow-2xl p-6;
+            }
+            
+            .input-field {
+              @apply w-full px-4 py-3 bg-gray-900 border-2 border-fenix-gold/30 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-fenix-gold focus:border-fenix-gold transition-all;
+            }
+            
+            . badge-gold {
+              @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-fenix-gold text-fenix-black;
+            }
+            
+            . heading-gold {
+              @apply text-transparent bg-clip-text bg-gold-gradient font-extrabold;
+            }
+          }
+
+          @media print {
+            .no-print {
+              display: none ! important;
+            }
+            body {
+              @apply bg-white text-black;
+            }
+            . card {
+              @apply bg-white border-black;
+            }
+          }
+
+          @keyframes gold-shine {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+          }
+
+          . gold-shine {
+            background: linear-gradient(90deg, #DAA520 0%, #FFD700 25%, #FFF4CC 50%, #FFD700 75%, #DAA520 100%);
+            background-size: 200% auto;
+            animation: gold-shine 3s linear infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color:  transparent;
+            background-clip:  text;
+          }
+    validation:
+      - Global styles applied
+      - Custom button classes working
+      - Card styles applied
+      - Input field styles functional
+      - Print styles hide . no-print elements
+      - Gold shine animation working
+      - No CSS errors
+
+  # ============================================================================
+  # PHASE 1: DATABASE SETUP
+  # ============================================================================
+
+  - id: setup-prisma // complete
+    title: Initialize Prisma with PostgreSQL Schema
+    priority: critical
+    estimated_time: 45m
+    depends_on:
+      - setup-nextjs-project
+    description:  |
+      Set up Prisma ORM with PostgreSQL database schema for users, groups, 
+      players, trainings, and attendance records. 
+    steps:
+      - Install:  npm install prisma @prisma/client
+      - Initialize: npx prisma init
+      - Create . env file with DATABASE_URL
+      - Create Prisma schema with all 5 tables
+      - Run migration:  npx prisma migrate dev --name init
+      - Generate client:  npx prisma generate
+    files_to_create:
+      - path: prisma/schema.prisma
+        description: Database schema with 5 tables
+        content: |
+          generator client {
+            provider = "prisma-client-js"
+          }
+
+          datasource db {
+            provider = "postgresql"
+            url      = env("DATABASE_URL")
+          }
+
+          model User {
+            id            String    @id @default(uuid())
+            email         String    @unique
+            passwordHash  String    @map("password_hash")
+            role          String
+            firstName     String    @map("first_name")
+            lastName      String    @map("last_name")
+            createdAt     DateTime  @default(now()) @map("created_at")
+            updatedAt     DateTime  @updatedAt @map("updated_at")
+            
+            groups        Group[]   @relation("CoachGroups")
+            trainings     Training[] @relation("CreatedTrainings")
+
+            @@map("users")
+          }
+
+          model Group {
+            id        String    @id @default(uuid())
+            name      String
+            yearBorn  Int?       @map("year_born")
+            coachId   String?    @map("coach_id")
+            active    Boolean   @default(true)
+            createdAt DateTime  @default(now()) @map("created_at")
+            
+            coach     User?     @relation("CoachGroups", fields: [coachId], references: [id], onDelete: SetNull)
+            players   Player[]
+            trainings Training[]
+
+            @@map("groups")
+          }
+
+          model Player {
+            id            String       @id @default(uuid())
+            firstName     String       @map("first_name")
+            lastName      String       @map("last_name")
+            groupId       String       @map("group_id")
+            jerseyNumber  Int?          @map("jersey_number")
+            active        Boolean      @default(true)
+            createdAt     DateTime     @default(now()) @map("created_at")
+            
+            group         Group        @relation(fields: [groupId], references: [id], onDelete:  Cascade)
+            attendance    Attendance[]
+
+            @@map("players")
+          }
+
+          model Training {
+            id            String       @id @default(uuid())
+            token         String       @unique
+            groupId       String       @map("group_id")
+            trainingDate  DateTime     @map("training_date") @db.Date
+            trainingTime  String       @map("training_time")
+            notes         String? 
+            createdBy     String?       @map("created_by")
+            createdAt     DateTime     @default(now()) @map("created_at")
+            
+            group         Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+            creator       User?        @relation("CreatedTrainings", fields: [createdBy], references: [id], onDelete: SetNull)
+            attendance    Attendance[]
+
+            @@map("trainings")
+          }
+
+          model Attendance {
+            id          String   @id @default(uuid())
+            trainingId  String   @map("training_id")
+            playerId    String   @map("player_id")
+            status      String
+            respondedAt DateTime @default(now()) @map("responded_at")
+            updatedAt   DateTime @updatedAt @map("updated_at")
+            
+            training    Training @relation(fields: [trainingId], references: [id], onDelete:  Cascade)
+            player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+            @@unique([trainingId, playerId])
+            @@map("attendance")
+          }
+      - path: .env. example
+        description: Environment variables template
+        content: |
+          DATABASE_URL="postgresql://user:password@host:5432/fenix_db"
+          NEXTAUTH_SECRET="your-secret-key-here-min-32-characters"
+          NEXTAUTH_URL="http://localhost:3000"
+      - path: lib/prisma. ts
+        description: Prisma client singleton
+        content: |
+          import { PrismaClient } from '@prisma/client'
+
+          const globalForPrisma = globalThis as unknown as {
+            prisma: PrismaClient | undefined
+          }
+
+          export const prisma = globalForPrisma.prisma ??  new PrismaClient()
+
+          if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+    validation:
+      - Prisma installed
+      - Database schema created with 5 tables
+      - Migration successful
+      - Prisma Client generated
+      - . env. example created
+      - Can connect to database
+
+  - id: create-database-seed // complete
+    title: Create Database Seed Data
+    priority: high
+    estimated_time: 30m
+    depends_on: 
+      - setup-prisma
+    description: |
+      Create seed script to populate database with sample data for testing
+      (coaches, groups, players).
+    steps:
+      - Install bcryptjs: npm install bcryptjs
+      - Install types: npm install -D @types/bcryptjs
+      - Create seed file
+      - Add seed command to package.json
+      - Run seed:  npx prisma db seed
+    files_to_create:
+      - path: prisma/seed.ts
+        description: Database seed script
+        content: |
+          import { PrismaClient } from '@prisma/client';
+          import bcrypt from 'bcryptjs';
+
+          const prisma = new PrismaClient();
+
+          async function main() {
+            console.log('🌱 Starting database seed...');
+
+            // Create coach user
+            const coach = await prisma.user.upsert({
+              where: { email: 'anna.trenerka@fenix.pl' },
+              update: {},
+              create: {
+                email:  'anna.trenerka@fenix.pl',
+                passwordHash: await bcrypt.hash('password123', 10),
+                role: 'coach',
+                firstName: 'Anna',
+                lastName: 'Kowalska',
+              },
+            });
+            console.log('✅ Coach created:', coach.email);
+
+            // Create groups
+            const group2016 = await prisma.group. upsert({
+              where:  { id: 'fenix-2016' },
+              update: {},
+              create: {
+                id: 'fenix-2016',
+                name: 'FENIX 2016',
+                yearBorn: 2016,
+                coachId: coach. id,
+              },
+            });
+
+            const group2014 = await prisma.group. upsert({
+              where:  { id: 'fenix-2014' },
+              update:  {},
+              create: {
+                id: 'fenix-2014',
+                name: 'FENIX 2014',
+                yearBorn: 2014,
+                coachId: coach.id,
+              },
+            });
+            console.log('✅ Groups created:  FENIX 2016, FENIX 2014');
+
+            // Create players for 2016 group
+            const players2016Names = [
+              { firstName: 'Jan', lastName:  'Kowalski', jersey: 7 },
+              { firstName: 'Anna', lastName: 'Nowak', jersey: 10 },
+              { firstName: 'Piotr', lastName: 'Wiśniewski', jersey: 5 },
+              { firstName: 'Maria', lastName: 'Lewandowska', jersey: 3 },
+              { firstName: 'Tomasz', lastName: 'Zieliński', jersey: 11 },
+              { firstName: 'Katarzyna', lastName: 'Szymańska', jersey: 9 },
+              { firstName: 'Michał', lastName: 'Woźniak', jersey: 4 },
+              { firstName: 'Agnieszka', lastName: 'Dąbrowska', jersey: 6 },
+            ];
+
+            for (const player of players2016Names) {
+              await prisma. player.upsert({
+                where: {
+                  id: `player-2016-${player.lastName. toLowerCase()}`,
+                },
+                update: {},
+                create: {
+                  id: `player-2016-${player.lastName.toLowerCase()}`,
+                  firstName: player.firstName,
+                  lastName: player.lastName,
+                  groupId: group2016.id,
+                  jerseyNumber: player. jersey,
+                },
+              });
+            }
+            console.log(`✅ Created ${players2016Names.length} players for FENIX 2016`);
+
+            // Create players for 2014 group
+            const players2014Names = [
+              { firstName:  'Paweł', lastName: 'Kowalczyk', jersey: 2 },
+              { firstName: 'Ewa', lastName: 'Jankowska', jersey: 8 },
+              { firstName: 'Adam', lastName: 'Mazur', jersey: 12 },
+            ];
+
+            for (const player of players2014Names) {
+              await prisma.player.upsert({
+                where: {
+                  id: `player-2014-${player.lastName.toLowerCase()}`,
+                },
+                update: {},
+                create: {
+                  id: `player-2014-${player.lastName.toLowerCase()}`,
+                  firstName: player.firstName,
+                  lastName: player.lastName,
+                  groupId: group2014.id,
+                  jerseyNumber: player.jersey,
+                },
+              });
+            }
+            console. log(`✅ Created ${players2014Names.length} players for FENIX 2014`);
+
+            console.log('🎉 Database seeded successfully!');
+          }
+
+          main()
+            .catch((e) => {
+              console.error('❌ Seed failed:', e);
+              process.exit(1);
+            })
+            .finally(async () => {
+              await prisma.$disconnect();
+            });
+    files_to_modify:
+      - path: package.json
+        description: Add seed command
+        changes: 
+          - Add to "prisma" key:  { "seed": "tsx prisma/seed.ts" }
+          - Add to "scripts":  { "seed": "tsx prisma/seed.ts" }
+    validation:
+      - Seed file created
+      - Seed script runs without errors
+      - Coach user created in database
+      - Groups created
+      - Players created
+      - Can login with:  anna.trenerka@fenix. pl / password123
+
+  # ============================================================================
+  # PHASE 2: AUTHENTICATION & API ROUTES
+  # ============================================================================
+
+  - id: create-auth-lib // complete
+    title: Create Authentication Utilities
+    priority: critical
+    estimated_time: 30m
+    depends_on: 
+      - setup-prisma
+    description: |
+      Create authentication utility functions for JWT token generation,
+      verification, and password hashing.
+    steps:
+      - Install:  npm install jose bcryptjs nanoid
+      - Install types: npm install -D @types/bcryptjs
+      - Create auth utility file
+      - Create types file
+    files_to_create:
+      - path: lib/auth.ts
+        description: Authentication utilities
+        content: |
+          import { NextRequest } from 'next/server';
+          import { jwtVerify, SignJWT } from 'jose';
+
+          const secret = new TextEncoder().encode(
+            process.env.NEXTAUTH_SECRET || 'fallback-secret-key-change-in-production'
+          );
+
+          export interface AuthPayload {
+            userId: string;
+            email: string;
+            role: string;
+          }
+
+          export async function createToken(payload: AuthPayload): Promise<string> {
+            return await new SignJWT(payload)
+              .setProtectedHeader({ alg: 'HS256' })
+              .setExpirationTime('24h')
+              .setIssuedAt()
+              .sign(secret);
+          }
+
+          export async function verifyAuth(request: NextRequest): Promise<AuthPayload | null> {
+            const token = request.cookies.get('token')?.value;
+
+            if (!token) {
+              return null;
+            }
+
+            try {
+              const { payload } = await jwtVerify(token, secret);
+              return payload as AuthPayload;
+            } catch (error) {
+              return null;
+            }
+          }
+
+          export async function verifyToken(token: string): Promise<AuthPayload | null> {
+            try {
+              const { payload } = await jwtVerify(token, secret);
+              return payload as AuthPayload;
+            } catch (error) {
+              return null;
+            }
+          }
+      - path: lib/types. ts
+        description: TypeScript types
+        content: |
+          export interface User {
+            id: string;
+            email: string;
+            role: string;
+            firstName: string;
+            lastName: string;
+          }
+
+          export interface Training {
+            id: string;
+            token: string;
+            trainingDate: string;
+            trainingTime: string;
+            groupId: string;
+            notes?: string;
+            group:  {
+              name: string;
+            };
+          }
+
+          export interface Player {
+            id: string;
+            firstName: string;
+            lastName: string;
+            jerseyNumber?:  number;
+          }
+
+          export interface AttendanceRecord {
+            id:  string;
+            status: 'will_attend' | 'will_not_attend';
+            respondedAt: Date;
+          }
+    validation:
+      - Auth utilities created
+      - JWT functions working
+      - Types defined
+      - No TypeScript errors
+
+  - id: create-auth-api // complete
+    title:  Implement Authentication API Routes
+    priority: critical
+    estimated_time: 45m
+    depends_on: 
+      - create-auth-lib
+    description: |
+      Create API routes for login and logout functionality. 
+    files_to_create:
+      - path: app/api/auth/login/route.ts
+        description: Login API endpoint
+        content: |
+          import { NextRequest, NextResponse } from 'next/server';
+          import bcrypt from 'bcryptjs';
+          import { prisma } from '@/lib/prisma';
+          import { createToken } from '@/lib/auth';
+
+          export async function POST(request:  NextRequest) {
+            try {
+              const { email, password } = await request.json();
+
+              if (!email || !password) {
+                return NextResponse.json(
+                  { error: 'Email i hasło są wymagane' },
+                  { status: 400 }
+                );
+              }
+
+              const user = await prisma.user. findUnique({
+                where:  { email },
+              });
+
+              if (!user) {
+                return NextResponse.json(
+                  { error: 'Nieprawidłowy email lub hasło' },
+                  { status: 401 }
+                );
+              }
+
+              const validPassword = await bcrypt.compare(password, user.passwordHash);
+
+              if (!validPassword) {
+                return NextResponse.json(
+                  { error: 'Nieprawidłowy email lub hasło' },
+                  { status: 401 }
+                );
+              }
+
+              const token = await createToken({
+                userId: user.id,
+                email: user.email,
+                role: user.role,
+              });
+
+              const response = NextResponse.json({
+                success: true,
+                user: {
+                  id: user.id,
+                  email: user.email,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                }
+              });
+
+              response.cookies.set('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24, // 24 hours
+                path: '/',
+              });
+
+              return response;
+            } catch (error) {
+              console.error('Login error:', error);
+              return NextResponse.json(
+                { error: 'Błąd serwera' },
+                { status: 500 }
+              );
+            }
+          }
+      - path: app/api/auth/logout/route.ts
+        description: Logout API endpoint
+        content: |
+          import { NextResponse } from 'next/server';
+
+          export async function POST() {
+            const response = NextResponse.json({ success: true });
+            response.cookies.delete('token');
+            return response;
+          }
+      - path: app/api/auth/me/route.ts
+        description: Get current user endpoint
+        content: |
+          import { NextRequest, NextResponse } from 'next/server';
+          import { verifyAuth } from '@/lib/auth';
+          import { prisma } from '@/lib/prisma';
+
+          export async function GET(request: NextRequest) {
+            const auth = await verifyAuth(request);
+
+            if (!auth) {
+              return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const user = await prisma.user.findUnique({
+              where: { id: auth.userId },
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+              },
+            });
+
+            return NextResponse.json({ user });
+          }
+    validation:
+      - POST /api/auth/login works
+      - POST /api/auth/logout works
+      - GET /api/auth/me works
+      - JWT token stored in HTTP-only cookie
+      - Password verification working
+      - Proper error messages (in Polish)
+
+  - id: create-middleware // complete ??
+    title: Add Authentication Middleware
+    priority: high
+    estimated_time: 20m
+    depends_on: 
+      - create-auth-api
+    description: |
+      Create Next.js middleware to protect admin routes.
+    files_to_create:
+      - path: middleware.ts
+        description: Authentication middleware
+        content: |
+          import { NextResponse } from 'next/server';
+          import type { NextRequest } from 'next/server';
+          import { verifyToken } from './lib/auth';
+
+          export async function middleware(request: NextRequest) {
+            const token = request. cookies.get('token')?.value;
+
+            // Public routes (attendance pages)
+            if (request.nextUrl.pathname.startsWith('/t/')) {
+              return NextResponse.next();
+            }
+
+            // Admin routes require authentication
+            if (request.nextUrl.pathname.startsWith('/admin')) {
+              if (!token) {
+                const loginUrl = new URL('/admin/login', request.url);
+                return NextResponse.redirect(loginUrl);
+              }
+
+              const payload = await verifyToken(token);
+              if (!payload) {
+                const loginUrl = new URL('/admin/login', request.url);
+                return NextResponse.redirect(loginUrl);
+              }
+            }
+
+            // API routes (except public attendance API)
+            if (request.nextUrl.pathname.startsWith('/api')) {
+              if (request.nextUrl.pathname.startsWith('/api/auth')) {
+                return NextResponse. next();
+              }
+              if (request.nextUrl.pathname.startsWith('/api/attendance')) {
+                return NextResponse.next();
+              }
+
+              if (!token) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status:  401 });
+              }
+
+              const payload = await verifyToken(token);
+              if (!payload) {
+                return NextResponse. json({ error: 'Unauthorized' }, { status: 401 });
+              }
+            }
+
+            return NextResponse.next();
+          }
+
+          export const config = {
+            matcher: [
+              '/admin/:path*',
+              '/api/:path*',
+            ],
+          };
+    validation: 
+      - Middleware protects /admin/* routes
+      - Unauthenticated users redirected to login
+      - API routes protected (except auth and attendance)
+      - Public routes /t/* accessible
+      - No infinite redirect loops
+
+  - id: create-trainings-api
+    title:  Implement Trainings API Routes
+    priority: critical
+    estimated_time: 60m
+    depends_on: 
+      - create-auth-api
+    description: |
+      Create API routes for managing trainings:  list, create, get details. 
+    steps:
+      - Create GET endpoint for listing trainings
+      - Create POST endpoint for creating trainings
+      - Create GET endpoint for training details with attendance
+      - Generate unique tokens using nanoid
+    files_to_create:
+      - path: app/api/trainings/route.ts
+        description: List and create trainings
+        content: |
+          import { NextRequest, NextResponse } from 'next/server';
+          import { prisma } from '@/lib/prisma';
+          import { verifyAuth } from '@/lib/auth';
+          import { customAlphabet } from 'nanoid';
+
+          const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 12);
+
+          export async function GET(request: NextRequest) {
+            const auth = await verifyAuth(request);
+            if (!auth) {
+              return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const searchParams = request.nextUrl.searchParams;
+            const filter = searchParams.get('filter') || 'upcoming';
+
+            const now = new Date();
+            const trainings = await prisma.training. findMany({
+              where: {
+                trainingDate: filter === 'upcoming'
+                  ? { gte: now }
+                  :  { lt: now },
+              },
+              include: {
+                group: true,
+                _count: {
+                  select: { attendance: true },
+                },
+              },
+              orderBy: {
+                trainingDate: filter === 'upcoming' ? 'asc' : 'desc',
+              },
+            });
+
+            const trainingsWithTotal = await Promise.all(
+              trainings.map(async (training) => {
+                const totalPlayers = await prisma.player. count({
+                  where: {
+                    groupId: training. groupId,
+                    active: true,
+                  },
+                });
+                return { ...training, totalPlayers };
+              })
+            );
+
+            return NextResponse.json(trainingsWithTotal);
+          }
+
+          export async function POST(request: NextRequest) {
+            const auth = await verifyAuth(request);
+            if (!auth) {
+              return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const { trainingDate, trainingTime, groupId, notes } = await request.json();
+
+            const training = await prisma.training. create({
+              data: {
+                token: nanoid(),
+                trainingDate:  new Date(trainingDate),
+                trainingTime,
+                groupId,
+                notes,
+                createdBy: auth.userId as string,
+              },
+            });
+
+            return NextResponse.json(training);
+          }
+      - path: app/api/trainings/[id]/route.ts
+        description: Get training details with attendance
+        content: |
+          import { NextRequest, NextResponse } from 'next/server';
+          import { prisma } from '@/lib/prisma';
+          import { verifyAuth } from '@/lib/auth';
+
+          export async function GET(
+            request:  NextRequest,
+            { params }: { params: { id: string } }
+          ) {
+            const auth = await verifyAuth(request);
+            if (!auth) {
+              return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const training = await prisma.training.findUnique({
+              where: { id: params.id },
+              include: {
+                group: true,
+              },
+            });
+
+            if (! training) {
+              return NextResponse.json({ error: 'Training not found' }, { status: 404 });
+            }
+
+            const players = await prisma.player.findMany({
+              where: {
+                groupId: training.groupId,
+                active: true,
+              },
+              include: {
+                attendance: {
+                  where: {
+                    trainingId: params.id,
+                  },
+                },
+              },
+            });
+
+            const playersWithStatus = players.map((player) => ({
+              id: player.id,
+              firstName: player.firstName,
+              lastName: player.lastName,
+              status: player.attendance[0]?.status || 'no_response',
+              respondedAt: player.attendance[0]?.respondedAt || null,
+            }));
+
+            const stats = {
+              total: players.length,
+              willAttend: playersWithStatus. filter((p) => p.status === 'will_attend').length,
+              willNotAttend: playersWithStatus.filter((p) => p.status === 'will_not_attend').length,
+              noResponse: playersWithStatus.filter((p) => p.status === 'no_response').length,
+            };
+
+            return NextResponse.json({
+              training,
+              stats,
+              players: playersWithStatus,
+            });
+          }
+      - path: app/api/groups/route.ts
+        description: List groups for dropdown
+        content: |
+          import { NextRequest, NextResponse } from 'next/server';
+          import { prisma } from '@/lib/prisma';
+          import { verifyAuth } from '@/lib/auth';
+
+          export async function GET(request: NextRequest) {
+            const auth = await verifyAuth(request);
+            if (!auth) {
+              return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+
+            const groups = await prisma.group.findMany({
+              where: { active: true },
+              orderBy: { name: 'asc' },
+              select: {
+                id: true,
+                name: true,
+                yearBorn: true,
+              },
+            });
+
+            return NextResponse.json(groups);
+          }
+    validation:
+      - GET /api/trainings returns list
+      - POST /api/trainings creates training
+      - GET /api/trainings/[id] returns details
+      - GET /api/groups returns groups
+      - All routes require authentication
+      - Token generation works
+      - Attendance stats calculated correctly
+
+  - id: create-attendance-api
+    title: Implement Attendance API Routes (Public)
+    priority: critical
+    estimated_time: 45m
+    depends_on: 
+      - setup-prisma
+    description: |
+      Create public API routes for parents to submit attendance (no auth required).
+    files_to_create:
+      - path: app/api/attendance/[token]/route.ts
+        description: Public attendance API
+        content: |
+          import { NextRequest, NextResponse } from 'next/server';
+          import { prisma } from '@/lib/prisma';
+
+          export async function GET(
+            request: NextRequest,
+            { params }: { params: { token: string } }
+          ) {
+            const training = await prisma.training.findUnique({
+              where: { token: params.token },
+              include: {
+                group: {
+                  include: {
+                    players: {
+                      where: { active: true },
+                    },
+                  },
+                },
+              },
+            });
+
+            if (!training) {
+              return NextResponse.json(
+                { error: 'Link nie został znaleziony' },
+                { status: 404 }
+              );
+            }
+
+            // Check if training has already started
+            const trainingDateTime = new Date(training.trainingDate);
+            const [hours, minutes] = training.trainingTime.split(':');
+            trainingDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+            if (trainingDateTime < new Date()) {
+              return NextResponse.json(
+                { error: 'Trening już się rozpoczął' },
+                { status:  400 }
+              );
+            }
+
+            return NextResponse.json({
+              trainingDate: training.trainingDate,
+              trainingTime: training.trainingTime,
+              group: {
+                name: training.group.name,
+              },
+              players: training.group.players,
+            });
+          }
+
+          export async function POST(
+            request: NextRequest,
+            { params }: { params: { token: string } }
+          ) {
+            const { playerId, status } = await request.json();
+
+            const training = await prisma. training.findUnique({
+              where: { token: params.token },
+            });
+
+            if (!training) {
+              return NextResponse.json(
+                { error: 'Training not found' },
+                { status:  404 }
+              );
+            }
+
+            // Upsert attendance (create or update)
+            const attendance = await prisma.attendance.upsert({
+              where: {
+                trainingId_playerId: {
+                  trainingId: training.id,
+                  playerId,
+                },
+              },
+              update: {
+                status,
+                updatedAt: new Date(),
+              },
+              create: {
+                trainingId: training.id,
+                playerId,
+                status,
+              },
+            });
+
+            return NextResponse.json(attendance);
+          }
+    validation:
+      - GET /api/attendance/[token] returns training info
+      - POST /api/attendance/[token] creates/updates attendance
+      - No authentication required
+      - Invalid tokens return 404
+      - Training start time validation works
+      - Upsert allows changing responses
+
+  # ============================================================================
+  # PHASE 3: ADMIN UI - COMPONENTS (CONTINUED IN NEXT MESSAGE DUE TO LENGTH)
+  # ============================================================================
+
+  - id: create-admin-login-page
+    title: Create Admin Login Page (Black & Gold Theme)
+    priority: critical
+    estimated_time: 45m
+    depends_on: 
+      - setup-global-styles
+      - create-auth-api
+    description: |
+      Implement the login page for coaches with FENIX black and gold theme.
+      All UI text in Polish.
+    files_to_create:
+      - path: app/admin/login/page.tsx
+        description: Coach login page
+        content: |
+          'use client';
+
+          import { useState } from 'react';
+          import { useRouter } from 'next/navigation';
+
+          export default function LoginPage() {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+            const router = useRouter();
+
+            const handleSubmit = async (e: React.FormEvent) => {
+              e.preventDefault();
+              setLoading(true);
+              setError('');
+
+              try {
+                const res = await fetch('/api/auth/login', {
+                  method:  'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email, password }),
+                });
+
+                if (res.ok) {
+                  router.push('/admin/treningi');
+                  router.refresh();
+                } else {
+                  const data = await res.json();
+                  setError(data.error || 'Nieprawidłowy email lub hasło');
+                }
+              } catch (err) {
+                setError('Coś poszło nie tak.  Spróbuj ponownie.');
+              } finally {
+                setLoading(false);
+              }
+            };
+
+            return (
+              <div className="min-h-screen flex items-center justify-center bg-fenix-black relative overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden">
+                  <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-fenix-gold/5 rounded-full blur-3xl animate-pulse"></div>
+                  <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-fenix-gold/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+                </div>
+
+                <div className="card max-w-md w-full mx-4 relative z-10">
+                  <div className="text-center mb-8">
+                    <div className="inline-block mb-4">
+                      <div className="w-20 h-20 mx-auto bg-gold-gradient rounded-full flex items-center justify-center shadow-xl">
+                        <span className="text-4xl">⚽</span>
+                      </div>
+                    </div>
+                    <h1 className="text-4xl font-extrabold gold-shine mb-2">
+                      FENIX TEAM
+                    </h1>
+                    <p className="text-gray-400 text-sm">Panel trenerki</p>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-semibold text-fenix-gold mb-2">
+                        Adres email
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target. value)}
+                        className="input-field"
+                        placeholder="anna.trenerka@fenix.pl"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-semibold text-fenix-gold mb-2">
+                        Hasło
+                      </label>
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="input-field"
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
+
+                    {error && (
+                      <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
+                        {error}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="btn-gold w-full text-lg"
+                    >
+                      {loading ? 'Logowanie.. .' : 'Zaloguj się'}
+                    </button>
+                  </form>
+
+                  <div className="mt-6 text-center">
+                    <p className="text-xs text-gray-500">
+                      Demo:  anna.trenerka@fenix.pl / password123
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+    validation: 
+      - Login page renders with black/gold theme
+      - Form validation working
+      - Error messages in Polish
+      - Loading state shown
+      - Successful login redirects to /admin/treningi
+      - Responsive (mobile-first)
+      - No console errors
+
+  - id: create-admin-header
+    title: Create Admin Layout with Header
+    priority: high
+    estimated_time: 30m
+    depends_on: 
+      - create-admin-login-page
+    description: |
+      Create shared layout for admin pages with header and logout functionality.
+    files_to_create:
+      - path: components/AdminHeader.tsx
+        description: Admin header component with logout
+        content: |
+          'use client';
+
+          import { useRouter } from 'next/navigation';
+          import Link from 'next/link';
+
+          export default function AdminHeader() {
+            const router = useRouter();
+
+            const handleLogout = async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
+              router.push('/admin/login');
+              router.refresh();
+            };
+
+            return (
+              <header className="bg-gradient-to-r from-fenix-black to-gray-900 border-b-2 border-fenix-gold/30 shadow-xl no-print">
+                <div className="max-w-7xl mx-auto px-4 py-5 sm:px-6 lg: px-8">
+                  <div className="flex justify-between items-center">
+                    <Link href="/admin/treningi" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                      <div className="w-12 h-12 bg-gold-gradient rounded-full flex items-center justify-center">
+                        <span className="text-2xl">⚽</span>
+                      </div>
+                      <h1 className="text-2xl font-extrabold gold-shine">FENIX TEAM</h1>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="text-fenix-gold hover:text-fenix-gold-dark font-semibold transition-colors"
+                    >
+                      Wyloguj
+                    </button>
+                  </div>
+                </div>
+              </header>
+            );
+          }
+    validation: 
+      - Header component created
+      - Logout functionality works
+      - Logo clickable (returns to trainings list)
+      - Responsive design
+      - Hidden when printing (. no-print)
+
+  # NOTE: Due to character limits, I'm providing the complete YAML structure. 
+  # The remaining tasks (trainings list, create training form, attendance dashboard,
+  # parent page, testing, README) follow the same pattern shown above. 
+  # Each task has:  id, title, priority, estimated_time, depends_on, description,
+  # files_to_create, and validation criteria. 
+
+  # Continue with remaining admin UI tasks, parent UI, testing, and deployment... 
+
+metadata:
+  version: "1.0.0"
+  created: "2026-01-02"
+  language: "Polish (UI), English (code)"
+  theme: "Black & Gold (FENIX brand)"
+  target_platform: "Vercel"
+  database: "PostgreSQL (Neon/Railway)"
+  estimated_total_time: "20-25 hours"

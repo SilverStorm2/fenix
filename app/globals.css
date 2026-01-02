@@ -1,26 +1,82 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-fenix-black text-gray-100;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .btn-gold {
+    @apply bg-fenix-gold hover:bg-fenix-gold-dark text-fenix-black font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
+  }
+
+  .btn-black {
+    @apply bg-fenix-black border-2 border-fenix-gold hover:bg-fenix-gold hover:text-fenix-black text-fenix-gold font-bold py-3 px-6 rounded-lg transition-all duration-300;
+  }
+
+  .btn-success {
+    @apply bg-fenix-success hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .btn-danger {
+    @apply bg-fenix-danger hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg;
+  }
+
+  .card {
+    @apply bg-gradient-to-br from-gray-900 to-fenix-black border border-fenix-gold/20 rounded-xl shadow-2xl p-6;
+  }
+
+  .card-gold {
+    @apply bg-gradient-to-br from-fenix-gold-light to-fenix-gold border-2 border-fenix-gold-dark rounded-xl shadow-2xl p-6;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-gray-900 border-2 border-fenix-gold/30 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-fenix-gold focus:border-fenix-gold transition-all;
+  }
+
+  .badge-gold {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-fenix-gold text-fenix-black;
+  }
+
+  .heading-gold {
+    @apply text-transparent bg-clip-text bg-gold-gradient font-extrabold;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    @apply bg-white text-black;
+  }
+
+  .card {
+    @apply bg-white border-black;
+  }
+}
+
+@keyframes gold-shine {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.gold-shine {
+  background: linear-gradient(90deg, #DAA520 0%, #FFD700 25%, #FFF4CC 50%, #FFD700 75%, #DAA520 100%);
+  background-size: 200% auto;
+  animation: gold-shine 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
